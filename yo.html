@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クリックで画像を立体回転</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            perspective: 1200px;
+            position: relative;
+        }
+
+        .image-wrapper {
+            width: 500px;
+            height: 300px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform-origin: center center;
+            transform: rotateX(10deg) rotateY(0deg) rotateZ(30deg);
+            transition: transform 1s linear;
+        }
+
+        .image-wrapper img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+        }
+
+        .back {
+            transform: rotateY(180deg);
+        }
+
+        .curve-lines {
+            position: absolute;
+            width: 500px;
+            height: 300px;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        /* 影の追加 */
+        .shadow {
+            position: absolute;
+            width: 540px;
+            height: 25px;
+            background: rgba(0, 0, 0, 0.3);
+            filter: blur(12px);
+            border-radius: 50%;
+            bottom: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="shadow"></div>
+        <div class="image-wrapper" id="imageWrapper">
+            <canvas class="curve-lines" id="curveCanvas"></canvas>
+            <img src="yo_a.png" class="front" alt="Front Image">
+            <img src="yo_b.png" class="back" alt="Back Image">
+        </div>
+    </div>
+    <script>
+        const imageWrapper = document.getElementById("imageWrapper");
+        const curveCanvas = document.getElementById("curveCanvas");
+        const ctx = curveCanvas.getContext("2d");
+        curveCanvas.width = 500;
+        curveCanvas.height = 300;
+        let rotationY = 0;
+        let animationFrame;
+
+        function drawCurveLines() {
+            ctx.clearRect(0, 0, curveCanvas.width, curveCanvas.height);
+            for (let i = 0; i < 4; i++) {
+                let x = Math.random() * curveCanvas.width;
+                let y = Math.random() * curveCanvas.height;
+                let length = Math.random() * 30 + 20;
+                let thickness = Math.random() * 3 + 1;
+                let opacity = Math.random() * 0.5 + 0.5;
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
+                ctx.lineWidth = thickness;
+                ctx.moveTo(x, y);
+                ctx.quadraticCurveTo(x + length / 2, y - length, x + length, y);
+                ctx.stroke();
+            }
+        }
+
+        function animateCurves() {
+            drawCurveLines();
+            animationFrame = requestAnimationFrame(animateCurves);
+        }
+
+        imageWrapper.addEventListener("click", () => {
+            const direction = Math.random() < 0.5 ? 1 : -1;
+            rotationY += direction * 540;
+            imageWrapper.style.transition = "transform 1s linear";
+            imageWrapper.style.transform = `rotateX(10deg) rotateY(${rotationY}deg) rotateZ(30deg)`;
+            cancelAnimationFrame(animationFrame);
+            animateCurves();
+            setTimeout(() => cancelAnimationFrame(animationFrame), 1000);
+        });
+    </script>
+</body>
+
+</html>
